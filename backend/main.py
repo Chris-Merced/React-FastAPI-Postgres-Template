@@ -11,7 +11,11 @@ from security import create_access_token, decode_access_token, verify_password
 
 # psycopg3's async mode needs asyncio's SelectorEventLoop; Windows defaults
 # to ProactorEventLoop instead, which isn't compatible. Must be set before
-# uvicorn creates the event loop, hence it's the first thing in this module.
+# uvicorn creates the event loop, making it the first thing in this module.
+#
+# Allows Uvicorn to use SelectorEventLoop explicitly via
+# Uvicorn's --loop flag (see run --loop none
+# in README)
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
