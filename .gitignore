@@ -216,3 +216,22 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+tfplan*
+*.tfplan
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+override.tf
+
+# Backend Lambda build output (scripts/build-backend.ps1)
+backend/build/
+backend/lambda.zip
+override.tf.json
+*_override.tf
+*_override.tf.json

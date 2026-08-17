@@ -3,10 +3,8 @@
 Run with: venv/Scripts/python.exe seed.py
 Requires the schema to already exist - run `alembic upgrade head` first.
 
-Uses psycopg's plain *sync* connection, on purpose - this only runs once,
-by hand, so there's nothing to gain from async here. The FastAPI app itself
-uses the *async* side of psycopg3 (see database.py) since it's handling
-concurrent HTTP requests.
+Uses psycopg's plain connection directly, not the pool in database.py -
+this runs once, by hand, so there's no concurrent traffic to pool for.
 """
 
 import psycopg

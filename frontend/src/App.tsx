@@ -5,6 +5,11 @@ type User = {
   email: string
 }
 
+// In prod there's no dev server to proxy '/api/*' - VITE_API_URL (set at
+// build time, see README's "Deploying to AWS") points straight at API
+// Gateway instead. Falls back to '/api' so local dev is unaffected.
+const API_URL = import.meta.env.VITE_API_URL ?? '/api'
+
 function App() {
   const [token, setToken] = useState<string | null>(
     () => localStorage.getItem('token'),
@@ -22,7 +27,7 @@ function App() {
       return
     }
 
-    fetch('/api/me', {
+    fetch(`${API_URL}/me`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then((res) => {
       if (!res.ok) {
@@ -42,7 +47,7 @@ function App() {
     // FastAPI's OAuth2PasswordRequestForm expects form-urlencoded fields
     // named 'username' and 'password', not JSON.
     const body = new URLSearchParams({ username: email, password })
-    const res = await fetch('/api/login', {
+    const res = await fetch(`${API_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body,
