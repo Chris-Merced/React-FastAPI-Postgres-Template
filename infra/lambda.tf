@@ -9,9 +9,8 @@ locals {
   database_url = "postgresql://${var.db_username}:${random_password.db.result}@${aws_db_instance.main.address}:${aws_db_instance.main.port}/${var.db_name}"
 
   # Built by scripts/build-backend.ps1 - must exist before `terraform
-  # apply` runs (same bootstrap-order requirement the old ECR-image
-  # approach had: a Lambda function can't be created pointing at code
-  # that doesn't exist yet either way).
+  # apply` runs, since a Lambda function can't be created pointing at a
+  # file that doesn't exist yet.
   lambda_zip_path = "${path.module}/../backend/lambda.zip"
 }
 

@@ -35,15 +35,13 @@ Then seed a test login (`test@example.com` / `password123`):
 Run the API:
 
 ```powershell
-.\venv\Scripts\python.exe -m uvicorn main:app --reload --loop none
+.\venv\Scripts\python.exe -m uvicorn main:app --reload
 ```
 
-**Windows note:** `--loop none` is required. Uvicorn defaults to Windows'
-`ProactorEventLoop`, which psycopg3's async mode can't run on (it needs
-`SelectorEventLoop`). `--loop none` lets `main.py`'s own event-loop-policy
-override take effect instead. Without it, every DB-touching endpoint times
-out after 30s with `psycopg_pool.PoolTimeout`. This is Windows-dev-only —
-Linux (including wherever this deploys) doesn't have the issue.
+(No special flags needed on Windows - `database.py` uses psycopg3's
+*sync* `ConnectionPool`, not the async one, so there's no event-loop
+dependency to work around. This changed when the backend was made
+Lambda-compatible - see "Deploying to AWS" below.)
 
 ## Database migrations (Alembic)
 
@@ -72,8 +70,12 @@ most recent migration).
 
 The connection string comes from `DATABASE_URL` in `.env` (via
 `backend/config.py`) - same single source of truth used everywhere else in
-this project, so there's nothing migration-specific to reconfigure when
-this eventually points at RDS instead of local Docker Postgres.
+this project. This local `.env` only ever points at Docker Postgres,
+though, never RDS - RDS is unreachable from a laptop entirely (private
+subnet, no path in from outside the VPC), so it gets a completely
+separate `DATABASE_URL`, assembled inside Terraform and injected straight
+into Lambda's environment. See "Deploying to AWS" below for how
+migrations actually reach RDS.
 
 ## Postgres port
 
@@ -90,9 +92,11 @@ npm run dev
 ```
 
 Opens on `http://localhost:5173`. The dev server proxies any `/api/*`
-request to the FastAPI backend on port 8000 (see `vite.config.ts`) — the
-frontend never hardcodes the backend's URL, and there's no CORS config
-needed since requests stay same-origin from the browser's point of view.
+request to the FastAPI backend on port 8000 (see `vite.config.ts`), so
+requests stay same-origin from the browser's point of view and no CORS
+config is needed locally. (In prod there's no proxy - the frontend calls
+API Gateway's real URL directly, baked in at build time; see "Deploying
+to AWS" below.)
 
 Log in with the seeded test user: `test@example.com` / `password123`.
 
